@@ -1,6 +1,12 @@
 .vscode/**
 .vscode-test/**
+out/test/**
 src/**
+server/out/test/**
+server/src/**
+server/package.json
+server/package-lock.json
+server/tsconfig.tsbuildinfo
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md
