@@ -1,5 +1,5 @@
 
-export type HistoryMessageType = "add-history" | "open-result" | "rerun-query";
+export type HistoryMessageType = "add-history" | "open-result" | "rerun-query" | "remove-history";
 
 export interface IHistoryMessage {
     

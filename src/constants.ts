@@ -9,5 +9,6 @@ export const GremlinResultScheme: string = "gremlin-res";
 export const Commands = {
     void: "cosmosExplorer.void",
     execute: "cosmosExplorer.execute",
+    clearHistory: "cosmosExplorer.clearHistory",
     activateCollection: "cosmosExplorer.activateCollection",
 };

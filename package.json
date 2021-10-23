@@ -12,7 +12,7 @@
 		"name": "Josef Fazekas",
 		"url": "https://github.com/theuntitled"
 	},
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"engines": {
 		"vscode": "^1.61.0"
 	},
@@ -110,8 +110,13 @@
 			},
 			{
 				"icon": "$(run)",
-				"title": "Execute query",
+				"title": "Execute gremlin query",
 				"command": "cosmosExplorer.execute"
+			},
+			{
+				"icon": "$(clear-all)",
+				"title": "Clear gremlin query history",
+				"command": "cosmosExplorer.clearHistory"
 			}
 		],
 		"menus": {
@@ -119,8 +124,23 @@
 				{
 					"icon": "$(run)",
 					"group": "navigation",
-					"command": "cosmosExplorer.execute",
-					"when": "resourceScheme == gremlin"
+					"when": "resourceLangId == gremlin",
+					"command": "cosmosExplorer.execute"
+				}
+			],
+			"commandPalette": [
+				{
+					"icon": "$(run)",
+					"when": "resourceLangId == gremlin",
+					"command": "cosmosExplorer.execute"
+				}
+			],
+			"view/title": [
+				{
+					"icon": "$(clear-all)",
+					"group": "navigation",
+					"command": "cosmosExplorer.clearHistory",
+					"when": "view == cosmosExplorer.queryHistory"
 				}
 			],
 			"view/item/context": [
@@ -149,11 +169,12 @@
 		"esbuild": "npm run esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
 		"compile": "tsc -b",
-		"watch": "tsc -watch -b",
+		"watch": "tsc -b -watch",
 		"postinstall": "cd server && npm install && cd ..",
 		"pretest": "npm run compile && npm run lint",
 		"lint": "eslint src --ext ts",
-		"test": "node ./out/test/runTest.js"
+		"test": "node ./out/test/runTest.js",
+		"package": "vsce package"
 	},
 	"devDependencies": {
 		"@types/glob": "^7.1.4",

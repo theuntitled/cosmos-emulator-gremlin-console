@@ -67,7 +67,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.languages.registerDocumentSemanticTokensProvider(documentSelector, new GremlinDocumentSemanticTokensProvider(client), legend);
 
-	const cosmosProvider = new CosmosProvider(context.globalState);
+	const cosmosProvider = new CosmosProvider(context);
 
 	context.subscriptions.push(cosmosProvider);
 	context.subscriptions.push(vscode.window.registerTreeDataProvider("cosmosExplorer.Collections", cosmosProvider));
@@ -76,6 +76,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(queryHistoryProvider);
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider("cosmosExplorer.queryHistory", queryHistoryProvider));
+
+	context.subscriptions.push(vscode.commands.registerCommand(Commands.clearHistory, queryHistoryProvider.clear))
 
 	const resultDocumentProvider = new ResultDocumentProvider(context);
 

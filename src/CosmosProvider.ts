@@ -19,10 +19,11 @@ export class CosmosProvider implements vscode.TreeDataProvider<IElement>, vscode
 	private _activeItem: string;
 	private _client: CosmosClient;
 	private _globalState: vscode.Memento;
-	private _cache: Record<string, { database: IElement, collections: string[] }>;
+	private _statusBarItem: vscode.StatusBarItem;
 	private _changeEventEmitter: vscode.EventEmitter<IElement>;
+	private _cache: Record<string, { database: IElement, collections: string[] }>;
 
-	constructor(globalState: vscode.Memento) {
+	constructor(context: vscode.ExtensionContext) {
 		this._client = new CosmosClient({
 			agent: new https.Agent({
 				rejectUnauthorized: false
@@ -31,7 +32,7 @@ export class CosmosProvider implements vscode.TreeDataProvider<IElement>, vscode
 			endpoint: CosmosDbEmulatorEndpoint
 		});;
 
-		this._globalState = globalState;
+		this._globalState = context.globalState;
 
 		this._cache = {};
 
@@ -40,8 +41,14 @@ export class CosmosProvider implements vscode.TreeDataProvider<IElement>, vscode
 		this.onDidChangeTreeData = this._changeEventEmitter.event;
 
 		this._activeItem = this._globalState.get(ActiveCollectionKey, "");
+
+		this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10);
+
+		this.updateStatusBar();
+
+		this._statusBarItem.show();
 	}
-	
+
 	public onDidChangeTreeData: vscode.Event<IElement>;
 
 	public getTreeItem(element: IElement): vscode.TreeItem | Thenable<vscode.TreeItem> {
@@ -103,7 +110,8 @@ export class CosmosProvider implements vscode.TreeDataProvider<IElement>, vscode
 
 		await this._globalState.update(ActiveCollectionKey, element.path);
 
-		vscode.window.setStatusBarMessage(`Switched gremlin query target to: ${element.path}`, 5000);
+		this.updateStatusBar();
+		vscode.window.setStatusBarMessage(`Switched gremlin query target to: ${element.path}`, 1200);
 
 		this.refreshDatabase(currentActiveParent);
 
@@ -112,9 +120,14 @@ export class CosmosProvider implements vscode.TreeDataProvider<IElement>, vscode
 		}
 	}
 
+	public updateStatusBar() {
+		this._statusBarItem.text = `Connected to ${this._activeItem}`;
+	}
+
 	public dispose() {
 		this._client.dispose();
-		this,this._changeEventEmitter.dispose();
+		this._statusBarItem.dispose();
+		this._changeEventEmitter.dispose();
 	}
 
 	private refreshDatabase(key: string | undefined) {

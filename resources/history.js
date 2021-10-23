@@ -8,10 +8,31 @@
 
 	const historyRoot = document.querySelector("#query-history");
 
+	const checkHistory = function() {
+		if (historyRoot.childNodes.length === 0) {
+			const emptyElement = document.createElement("div");
+
+			emptyElement.className = "empty";
+			emptyElement.innerHTML = "Empty history";
+
+			historyRoot.append(emptyElement);
+		}
+	};
+
 	window.addEventListener("message", function (event) {
+		if (event.data.type === "remove-history") {
+			historyRoot.querySelector(`[data-file-name='${event.data.fileName}']`)?.remove();
+
+			checkHistory();
+
+			return;
+		}
+
 		if (event.data.type !== "add-history") {
 			return;
 		}
+
+		historyRoot.querySelector(".empty")?.remove();
 
 		const data = event.data;
 
@@ -51,10 +72,12 @@
 <div class="actions">
 	<i class="codicon codicon-run"></i>
 	<i class="codicon codicon-open-preview"></i>
+	<i class="codicon codicon-trash"></i>
 </div>
 `;
 
 		historyEntry.className = "item";
+		historyEntry.dataset.fileName = data.fileName;
 
 		historyRoot.prepend(historyEntry);
 
@@ -72,5 +95,13 @@
 				fileName: data.fileName
 			});
 		});
+
+		historyEntry.querySelector(".codicon-trash").addEventListener("click", function () {
+			historyEntry.remove();
+
+			checkHistory();
+		});
 	});
+
+	checkHistory();
 })();

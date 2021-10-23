@@ -24,6 +24,7 @@ export class QueryHistoryProvider implements vscode.WebviewViewProvider, vscode.
 
 		this._extensionUri = context.extensionUri;
 
+		this.clear = this.clear.bind(this);
 		this.executeQuery = this.executeQuery.bind(this);
 	}
 
@@ -131,13 +132,15 @@ export class QueryHistoryProvider implements vscode.WebviewViewProvider, vscode.
 				items: result._items
 			};
 
-			await this.addToHistory(executionResult, fileName);
+			vscode.window.setStatusBarMessage(`Total RUs used: ${executionResult.totalRequestCharge}`, 4000);
+
+			await this.addToHistory(executionResult, fileName, true);
 		} catch (exception: Error | any) {
 			vscode.window.showErrorMessage(exception.message);
 		}
 	}
 
-	public async addToHistory(result: IExecutionResult, fileName: string) {
+	public async addToHistory(result: IExecutionResult, fileName: string, openFile: boolean) {
 		if (!fs.existsSync(this._storageUri.fsPath)) {
 			fs.mkdirSync(this._storageUri.fsPath);
 		}
@@ -150,7 +153,30 @@ export class QueryHistoryProvider implements vscode.WebviewViewProvider, vscode.
 			type: "add-history"
 		} as IHistoryMessage);
 
-		await this.openResult(fileName);
+		if (openFile) {
+			await this.openResult(fileName);
+		}
+	}
+
+	public async clear() {
+		if (!fs.existsSync(this._storageUri.fsPath)) {
+			fs.mkdirSync(this._storageUri.fsPath);
+		}
+		
+		const fileList = fs.readdirSync(this._storageUri.fsPath);
+
+		fileList.sort().forEach((fileName: string) => {
+			if (!fileName.startsWith("gremlin-")) {
+				return;
+			}
+
+			fs.rmSync(path.join(this._storageUri.fsPath, fileName));
+
+			this._view?.webview.postMessage({
+				fileName,
+				type: "remove-history"
+			} as IHistoryMessage);
+		});
 	}
 
 	public async connect(collectionUri: string) {
@@ -196,7 +222,7 @@ export class QueryHistoryProvider implements vscode.WebviewViewProvider, vscode.
 
 				const content = fs.readFileSync(fullName, { encoding: "utf8" });
 
-				this.addToHistory(JSON.parse(content), fileName);
+				this.addToHistory(JSON.parse(content), fileName, false);
 			});
 		} catch (exception: Error | any) {
 			vscode.window.showErrorMessage(exception.message);
